@@ -1,5 +1,3 @@
-const nombre = prompt("Bienvenida a NERAK. ¿Cuál es tu nombre?");
-
 class Producto {
     constructor(id, nombre, categoria, precio, stock) {
         this.id = id;
@@ -17,10 +15,6 @@ class Producto {
 
         return false;
     }
-
-    aplicarDescuento(porcentaje) {
-        return this.precio * (1 - porcentaje / 100);
-    }
 }
 
 const productosObjetos = [
@@ -35,423 +29,293 @@ const productosObjetos = [
     new Producto(9, "Campera", "Camperas", 75000, 20)
 ];
 
-const mostrarCatalogo = (lista) => {
-    if (lista.length === 0) {
-        return "El catálogo está vacío.";
-    }
+const formulario = document.querySelector("#formulario-producto");
+const inputNombre = document.querySelector("#nombre-producto");
+const inputCategoria = document.querySelector("#categoria-producto");
+const inputPrecio = document.querySelector("#precio-producto");
+const inputStock = document.querySelector("#stock-producto");
+const buscador = document.querySelector("#buscador-productos");
+const contenedorProductos = document.querySelector("#contenedor-productos");
+const mensajeFeedback = document.querySelector("#mensaje-feedback");
+const totalProductos = document.querySelector("#total-productos");
+const unidadesStock = document.querySelector("#unidades-stock");
+const valorStock = document.querySelector("#valor-stock");
 
-    let catalogo = "Catálogo de NERAK:\n\n";
+let siguienteId = 10;
 
-    for (const producto of lista) {
-        catalogo +=
-            producto.id + ". " +
-            producto.nombre + " - $" +
-            producto.precio.toLocaleString("es-AR") +
-            " - Stock: " + producto.stock + "\n";
-    }
-
-    return catalogo;
+const formatearPrecio = (precio) => {
+    return "$" + precio.toLocaleString("es-AR");
 };
 
-const buscarProducto = (nombreProducto) => {
-    return productosObjetos.find(
-        producto =>
-            producto.nombre.toLowerCase() === nombreProducto.trim().toLowerCase()
+const buscarProductos = function (termino) {
+    return productosObjetos.filter(producto =>
+        producto.nombre.toLowerCase().includes(termino.toLowerCase()) ||
+        producto.categoria.toLowerCase().includes(termino.toLowerCase())
     );
 };
 
-const filtrarPorPrecio = (precioMaximo) => {
-    return productosObjetos.filter(
-        producto => producto.precio <= precioMaximo
+function mostrarMensaje(texto, tipo) {
+    mensajeFeedback.textContent = texto;
+    mensajeFeedback.className = "feedback " + tipo;
+}
+
+function actualizarResumen() {
+    const cantidadUnidades = productosObjetos.reduce(
+        (total, producto) => total + producto.stock,
+        0
     );
-};
 
-const hayStockDisponible = () => {
-    return productosObjetos.some(
-        producto => producto.stock > 0
-    );
-};
-
-const mostrarPreciosConDescuento = (porcentaje) => {
-    return productosObjetos.map(producto => ({
-        nombre: producto.nombre,
-        precioOriginal: producto.precio,
-        precioConDescuento: producto.aplicarDescuento(porcentaje)
-    }));
-};
-
-const calcularValorStock = () => {
-    return productosObjetos.reduce(
+    const valorTotal = productosObjetos.reduce(
         (total, producto) => total + producto.precio * producto.stock,
         0
     );
-};
 
-const aplicarDescuentoCompra = (total) => {
-    return total >= 150000 ? total * 0.90 : total;
-};
+    totalProductos.textContent = productosObjetos.length;
+    unidadesStock.textContent = cantidadUnidades;
+    valorStock.textContent = formatearPrecio(valorTotal);
+}
 
-const mostrarMenu = () => {
-    return prompt(
-        "Bienvenida a NERAK, " + nombre + ".\n\n" +
-        "¿Qué querés hacer?\n\n" +
-        "1. Ver catálogo\n" +
-        "2. Buscar una prenda\n" +
-        "3. Filtrar prendas por precio máximo\n" +
-        "4. Consultar disponibilidad de stock\n" +
-        "5. Ver precios con 10% de descuento\n" +
-        "6. Consultar el valor total del stock\n" +
-        "7. Comprar prendas\n" +
-        "8. Agregar una prenda al catálogo\n" +
-        "9. Eliminar la última prenda del catálogo\n" +
-        "10. Salir"
-    );
-};
+function renderizarProductos(lista) {
+    contenedorProductos.innerHTML = "";
 
-const agregarProducto = () => {
-    const nombreProducto = prompt("Ingresá el nombre de la nueva prenda.");
+    if (lista.length === 0) {
+        contenedorProductos.innerHTML = `
+            <p class="mensaje-vacio">
+                No encontramos prendas que coincidan con tu búsqueda.
+            </p>
+        `;
 
-    if (nombreProducto === null) {
+        actualizarResumen();
         return;
     }
 
-    const nombreLimpio = nombreProducto.trim();
+    let contenido = "";
 
-    if (nombreLimpio === "") {
-        alert("El nombre de la prenda no puede estar vacío.");
+    for (const producto of lista) {
+        contenido += `
+            <article class="tarjeta-producto">
+                <p class="categoria-producto">${producto.categoria}</p>
+
+                <h3>${producto.nombre}</h3>
+
+                <p class="precio-producto">
+                    ${formatearPrecio(producto.precio)}
+                </p>
+
+                <p class="stock-producto">
+                    Stock disponible: ${producto.stock}
+                </p>
+
+                <div class="botones-producto">
+
+                    <button
+                        class="boton-accion boton-comprar"
+                        data-accion="comprar"
+                        data-id="${producto.id}"
+                        ${producto.stock === 0 ? "disabled" : ""}
+                    >
+                        Comprar
+                    </button>
+
+                    <button
+                        class="boton-accion boton-eliminar"
+                        data-accion="eliminar"
+                        data-id="${producto.id}"
+                    >
+                        Eliminar
+                    </button>
+
+                </div>
+            </article>
+        `;
+    }
+
+    contenedorProductos.innerHTML = contenido;
+
+    actualizarResumen();
+}
+
+function agregarProducto(evento) {
+    evento.preventDefault();
+
+    const nombre = inputNombre.value.trim();
+    const categoria = inputCategoria.value.trim();
+    const precio = Number(inputPrecio.value);
+    const stock = Number(inputStock.value);
+
+    if (nombre === "" || categoria === "") {
+        mostrarMensaje("Completá todos los campos.", "error");
         return;
     }
 
-    const productoExistente = buscarProducto(nombreLimpio);
-
-    if (productoExistente) {
-        alert("Ya existe una prenda con ese nombre en el catálogo.");
+    if (productosObjetos.some(producto =>
+        producto.nombre.toLowerCase() === nombre.toLowerCase()
+    )) {
+        mostrarMensaje("Ya existe una prenda con ese nombre.", "error");
         return;
     }
 
-    const categoriaIngresada = prompt("Ingresá la categoría de la prenda.");
-
-    if (categoriaIngresada === null) {
+    if (isNaN(precio) || precio <= 0) {
+        mostrarMensaje("Ingresá un precio válido mayor que cero.", "error");
         return;
     }
 
-    const categoriaLimpia = categoriaIngresada.trim();
-
-    if (categoriaLimpia === "") {
-        alert("La categoría no puede estar vacía.");
+    if (isNaN(stock) || stock < 0 || stock % 1 !== 0) {
+        mostrarMensaje("Ingresá una cantidad de stock válida.", "error");
         return;
     }
-
-    const precioIngresado = prompt("Ingresá el precio de la prenda.");
-
-    if (precioIngresado === null) {
-        return;
-    }
-
-    if (
-        precioIngresado.trim() === "" ||
-        !Number.isFinite(Number(precioIngresado)) ||
-        Number(precioIngresado) <= 0
-    ) {
-        alert("Ingresá un precio válido mayor que cero.");
-        return;
-    }
-
-    const stockIngresado = prompt("Ingresá la cantidad de unidades disponibles.");
-
-    if (stockIngresado === null) {
-        return;
-    }
-
-    if (
-        stockIngresado.trim() === "" ||
-        !Number.isInteger(Number(stockIngresado)) ||
-        Number(stockIngresado) < 0
-    ) {
-        alert("Ingresá una cantidad entera igual o mayor que cero.");
-        return;
-    }
-
-    const nuevoId = productosObjetos.reduce(
-        (mayorId, producto) => Math.max(mayorId, producto.id),
-        0
-    ) + 1;
 
     const nuevoProducto = new Producto(
-        nuevoId,
-        nombreLimpio,
-        categoriaLimpia,
-        Number(precioIngresado),
-        Number(stockIngresado)
+        siguienteId,
+        nombre,
+        categoria,
+        precio,
+        stock
     );
 
     productosObjetos.push(nuevoProducto);
+    siguienteId++;
 
-    alert(
-        "La prenda " + nuevoProducto.nombre +
-        " se agregó correctamente al catálogo."
-    );
+    formulario.reset();
 
-    console.log("Producto agregado:", nuevoProducto);
-    console.log("Catálogo actualizado:", productosObjetos);
-};
+    renderizarProductos(buscarProductos(buscador.value));
 
-const eliminarUltimoProducto = () => {
-    if (productosObjetos.length === 0) {
-        alert("No hay prendas para eliminar.");
-        return;
-    }
-
-    const productoEliminado = productosObjetos.pop();
-
-    alert(
-        "Se eliminó la última prenda del catálogo: " +
-        productoEliminado.nombre
-    );
-
-    console.log("Producto eliminado:", productoEliminado);
-    console.log("Catálogo actualizado:", productosObjetos);
-};
-
-const comprarPrendas = () => {
-    if (productosObjetos.length === 0) {
-        alert("No hay prendas disponibles en el catálogo.");
-        return;
-    }
-
-    alert(mostrarCatalogo(productosObjetos));
-    console.log(mostrarCatalogo(productosObjetos));
-
-    let cantidadPrendas;
-    let cantidadValida = false;
-
-    while (!cantidadValida) {
-        const cantidadIngresada = prompt(
-            "¿Cuántas prendas diferentes querés comprar? Ingresá un número entre 1 y 20."
-        );
-
-        if (cantidadIngresada === null) {
-            alert("Cancelaste la compra.");
-            return;
-        }
-
-        if (
-            cantidadIngresada.trim() !== "" &&
-            Number.isInteger(Number(cantidadIngresada)) &&
-            Number(cantidadIngresada) >= 1 &&
-            Number(cantidadIngresada) <= 20
-        ) {
-            cantidadPrendas = Number(cantidadIngresada);
-            cantidadValida = true;
-        } else {
-            alert("Ingresá una cantidad entera entre 1 y 20.");
-        }
-    }
-
-    let totalCompra = 0;
-    let cantidadComprada = 0;
-
-    for (let i = 1; i <= cantidadPrendas; i++) {
-        const nombreElegido = prompt(
-            "Prenda " + i + " de " + cantidadPrendas + "\n\n" +
-            mostrarCatalogo(productosObjetos) +
-            "\nEscribí el nombre de la prenda."
-        );
-
-        if (nombreElegido === null) {
-            alert("Cancelaste el resto de la compra.");
-            break;
-        }
-
-        if (nombreElegido.trim() === "") {
-            alert("Ingresá el nombre de una prenda.");
-            i--;
-            continue;
-        }
-
-        const productoElegido = buscarProducto(nombreElegido);
-
-        if (!productoElegido) {
-            alert("Esa prenda no existe en el catálogo.");
-            i--;
-        } else if (!productoElegido.vender(1)) {
-            alert("No hay stock disponible de esa prenda.");
-            i--;
-        } else {
-            totalCompra += productoElegido.precio;
-            cantidadComprada++;
-
-            console.log(
-                "Prenda comprada:", productoElegido.nombre,
-                "- Precio: $" + productoElegido.precio,
-                "- Stock restante: " + productoElegido.stock
-            );
-        }
-    }
-
-    if (cantidadComprada === 0) {
-        alert("No se completó ninguna compra.");
-        return;
-    }
-
-    const totalFinal = aplicarDescuentoCompra(totalCompra);
-
-    let mensajeFinal =
-        "Gracias por comprar en NERAK, " + nombre + ".\n\n" +
-        "Prendas compradas: " + cantidadComprada + "\n" +
-        "Total de tu compra: $" +
-        totalCompra.toLocaleString("es-AR") + "\n";
-
-    if (totalFinal < totalCompra) {
-        mensajeFinal +=
-            "¡Obtuviste un 10% de descuento!\n" +
-            "Total final: $" +
-            totalFinal.toLocaleString("es-AR");
-    } else {
-        mensajeFinal +=
-            "Total final: $" +
-            totalFinal.toLocaleString("es-AR");
-    }
-
-    alert(mensajeFinal);
-    console.log(mensajeFinal);
-};
-
-let opcion = mostrarMenu();
-
-while (opcion !== null && opcion !== "10") {
-    switch (opcion) {
-        case "1": {
-            const catalogo = mostrarCatalogo(productosObjetos);
-            alert(catalogo);
-            console.log(catalogo);
-            break;
-        }
-
-        case "2": {
-            const nombreBuscado = prompt("¿Qué prenda querés buscar?");
-
-            if (nombreBuscado !== null && nombreBuscado.trim() !== "") {
-                const productoEncontrado = buscarProducto(nombreBuscado);
-
-                if (productoEncontrado) {
-                    alert(
-                        "Encontramos " + productoEncontrado.nombre +
-                        ".\nPrecio: $" +
-                        productoEncontrado.precio.toLocaleString("es-AR") +
-                        "\nStock: " + productoEncontrado.stock
-                    );
-
-                    console.log("Producto encontrado:", productoEncontrado);
-                } else {
-                    alert("No encontramos esa prenda en NERAK.");
-                    console.log("No se encontró la prenda:", nombreBuscado);
-                }
-            } else if (nombreBuscado !== null) {
-                alert("Ingresá el nombre de una prenda.");
-            }
-
-            break;
-        }
-
-        case "3": {
-            const precioIngresado = prompt(
-                "Ingresá el precio máximo que querés pagar."
-            );
-
-            if (
-                precioIngresado !== null &&
-                precioIngresado.trim() !== "" &&
-                Number.isFinite(Number(precioIngresado)) &&
-                Number(precioIngresado) >= 0
-            ) {
-                const productosFiltrados = filtrarPorPrecio(
-                    Number(precioIngresado)
-                );
-
-                if (productosFiltrados.length > 0) {
-                    alert(mostrarCatalogo(productosFiltrados));
-                    console.log(
-                        "Prendas dentro del precio elegido:",
-                        productosFiltrados
-                    );
-                } else {
-                    alert("No hay prendas que se ajusten a ese precio.");
-                    console.log("No se encontraron prendas con ese precio máximo.");
-                }
-            } else if (precioIngresado !== null) {
-                alert("Ingresá un precio válido.");
-            }
-
-            break;
-        }
-
-        case "4": {
-            const disponibilidad = hayStockDisponible();
-
-            console.log("¿Hay prendas disponibles?", disponibilidad);
-
-            alert(
-                disponibilidad
-                    ? "¡Tenemos prendas disponibles para comprar!"
-                    : "En este momento no hay prendas disponibles."
-            );
-
-            break;
-        }
-
-        case "5": {
-            const productosConDescuento = mostrarPreciosConDescuento(10);
-
-            console.log("Precios con 10% de descuento:", productosConDescuento);
-
-            let mensaje = "PRECIOS NERAK CON 10% DE DESCUENTO\n\n";
-
-            for (const producto of productosConDescuento) {
-                mensaje +=
-                    producto.nombre + ": $" +
-                    producto.precioConDescuento.toLocaleString("es-AR") +
-                    "\n";
-            }
-
-            alert(mensaje);
-            break;
-        }
-
-        case "6": {
-            const valorTotalStock = calcularValorStock();
-
-            console.log("Valor total del stock: $" + valorTotalStock);
-
-            alert(
-                "El valor total del stock es de $" +
-                valorTotalStock.toLocaleString("es-AR")
-            );
-
-            break;
-        }
-
-        case "7": {
-            comprarPrendas();
-            break;
-        }
-
-        case "8": {
-            agregarProducto();
-            break;
-        }
-
-        case "9": {
-            eliminarUltimoProducto();
-            break;
-        }
-
-        default: {
-            alert("Opción no válida. Elegí un número del 0 al 9.");
-        }
-    }
-
-    opcion = mostrarMenu();
+    mostrarMensaje("La prenda se agregó correctamente al catálogo.", "exito");
 }
 
-alert("Gracias por visitar NERAK. ¡Hasta pronto!");
+function eliminarProducto(id) {
+    const indiceProducto = productosObjetos.findIndex(
+        producto => producto.id === id
+    );
+
+    if (indiceProducto === -1) {
+        return;
+    }
+
+    const productoEliminado = productosObjetos.splice(indiceProducto, 1);
+
+    renderizarProductos(buscarProductos(buscador.value));
+
+    mostrarMensaje(
+        "Se eliminó " + productoEliminado[0].nombre + " del catálogo.",
+        "exito"
+    );
+}
+
+function comprarProducto(id) {
+    const producto = productosObjetos.find(
+        producto => producto.id === id
+    );
+
+    if (!producto) {
+        return;
+    }
+
+    if (producto.vender(1)) {
+        renderizarProductos(buscarProductos(buscador.value));
+
+        mostrarMensaje(
+            "¡Compra realizada! Stock actualizado para " + producto.nombre + ".",
+            "exito"
+        );
+    } else {
+        mostrarMensaje("No hay stock disponible de esta prenda.", "error");
+    }
+}
+
+function manejarAcciones(evento) {
+    const boton = evento.target;
+
+    if (!boton.classList.contains("boton-accion")) {
+        return;
+    }
+
+    const id = Number(boton.dataset.id);
+    const accion = boton.dataset.accion;
+
+    if (accion === "comprar") {
+        comprarProducto(id);
+    }
+
+    if (accion === "eliminar") {
+        eliminarProducto(id);
+    }
+}
+
+function filtrarProductos() {
+    const termino = buscador.value.trim();
+
+    const productosFiltrados = buscarProductos(termino);
+
+    renderizarProductos(productosFiltrados);
+}
+
+formulario.addEventListener("submit", agregarProducto);
+
+contenedorProductos.addEventListener("click", manejarAcciones);
+
+buscador.addEventListener("keyup", filtrarProductos);
+
+renderizarProductos(productosObjetos);
+
+const slides = document.querySelectorAll(".slide");
+const indicadores = document.querySelectorAll(".indicador");
+const botonAnterior = document.querySelector(".carrusel-flecha.anterior");
+const botonSiguiente = document.querySelector(".carrusel-flecha.siguiente");
+
+let slideActual = 0;
+let intervaloCarrusel;
+
+function mostrarSlide(indice) {
+    if (slides.length === 0 || indicadores.length !== slides.length) {
+        return;
+    }
+
+    slides[slideActual].classList.remove("activo");
+    indicadores[slideActual].classList.remove("activo");
+
+    slideActual = (indice + slides.length) % slides.length;
+
+    slides[slideActual].classList.add("activo");
+    indicadores[slideActual].classList.add("activo");
+}
+
+function iniciarCarrusel() {
+    if (slides.length <= 1) {
+        return;
+    }
+
+    intervaloCarrusel = setInterval(() => {
+        mostrarSlide(slideActual + 1);
+    }, 5000);
+}
+
+function reiniciarCarrusel() {
+    clearInterval(intervaloCarrusel);
+    iniciarCarrusel();
+}
+
+if (slides.length > 0 && indicadores.length === slides.length) {
+    if (botonAnterior) {
+        botonAnterior.addEventListener("click", () => {
+            mostrarSlide(slideActual - 1);
+            reiniciarCarrusel();
+        });
+    }
+
+    if (botonSiguiente) {
+        botonSiguiente.addEventListener("click", () => {
+            mostrarSlide(slideActual + 1);
+            reiniciarCarrusel();
+        });
+    }
+
+    indicadores.forEach((indicador, indice) => {
+        indicador.addEventListener("click", () => {
+            mostrarSlide(indice);
+            reiniciarCarrusel();
+        });
+    });
+
+    iniciarCarrusel();
+}

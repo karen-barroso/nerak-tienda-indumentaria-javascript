@@ -1,17 +1,271 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>NERAK - Tienda de Indumentaria</title>
+```
+<meta name="description" content="NERAK. Indumentaria femenina. Descubrí prendas que expresan tu estilo.">
 
-    <script src="./js/main.js" defer></script>
+<title>NERAK | Indumentaria femenina</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+<link rel="stylesheet" href="./css/style.css">
+<script src="./js/main.js" defer></script>
+```
+
 </head>
+
 <body>
 
-    <h1>NERAK</h1>
-    <p>Tienda de indumentaria femenina</p>
+```
+<div class="barra-superior">
+    ENVÍOS A TODO EL PAÍS · NUEVA COLECCIÓN NERAK
+</div>
+
+<header class="encabezado">
+    <div class="contenedor-header">
+
+        <a href="#inicio" class="logo" aria-label="NERAK - Inicio">
+            NERAK
+            <span>INDUMENTARIA FEMENINA</span>
+        </a>
+
+        <nav class="navegacion">
+            <a href="#inicio">Inicio</a>
+            <a href="#coleccion">Colección</a>
+            <a href="#catalogo">Productos</a>
+            <a href="#nosotros">Nosotros</a>
+        </nav>
+
+        <a href="#catalogo" class="boton-header">DESCUBRIR</a>
+
+    </div>
+</header>
+
+<main>
+
+    <section class="hero" id="inicio">
+
+        <div class="carrusel">
+
+            <div class="slide activo">
+                <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=2000&q=85"
+                    alt="Moda femenina editorial">
+                <div class="hero-contenido">
+                    <p class="etiqueta">NUEVA COLECCIÓN · 2026</p>
+                    <h1>Vestí tu esencia.<br><em>Elegí ser vos.</em></h1>
+                    <p>Prendas que acompañan tu estilo y expresan quién sos.</p>
+                    <a href="#catalogo" class="boton-hero">DESCUBRIR COLECCIÓN</a>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=85"
+                    alt="Colección de moda femenina">
+                <div class="hero-contenido">
+                    <p class="etiqueta">NERAK COLLECTION</p>
+                    <h1>Tu estilo.<br><em>Tus propias reglas.</em></h1>
+                    <p>Descubrí prendas para cada momento de tu vida.</p>
+                    <a href="#catalogo" class="boton-hero">EXPLORAR PRENDAS</a>
+                </div>
+            </div>
+
+            <div class="slide">
+                <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=85"
+                    alt="Inspiración de moda femenina">
+                <div class="hero-contenido">
+                    <p class="etiqueta">UNA FORMA DE EXPRESIÓN</p>
+                    <h1>La elegancia<br><em>está en vos.</em></h1>
+                    <p>Encontrá esas prendas que hablan de tu personalidad.</p>
+                    <a href="#catalogo" class="boton-hero">CONOCÉ NERAK</a>
+                </div>
+            </div>
+
+            <button class="carrusel-flecha anterior" aria-label="Imagen anterior">&#10094;</button>
+            <button class="carrusel-flecha siguiente" aria-label="Imagen siguiente">&#10095;</button>
+
+            <div class="carrusel-indicadores">
+                <button class="indicador activo" aria-label="Ir a imagen 1"></button>
+                <button class="indicador" aria-label="Ir a imagen 2"></button>
+                <button class="indicador" aria-label="Ir a imagen 3"></button>
+            </div>
+
+        </div>
+
+        <span class="hero-numero">NERAK · INDUMENTARIA FEMENINA</span>
+
+    </section>
+
+    <section class="introduccion" id="nosotros">
+
+        <p class="etiqueta">NUESTRA IDENTIDAD</p>
+
+        <h2>El estilo no se impone.<br><em>Se expresa.</em></h2>
+
+        <p>
+            En NERAK creemos en una moda que celebra la personalidad,
+            la autenticidad y la libertad de elegir.
+            Descubrí prendas pensadas para acompañarte todos los días.
+        </p>
+
+    </section>
+
+    <section class="colecciones" id="coleccion">
+
+        <div class="encabezado-seccion">
+            <div>
+                <p class="etiqueta">ENCONTRÁ TU ESTILO</p>
+                <h2>Explorá nuestras <em>colecciones</em></h2>
+            </div>
+        </div>
+
+        <div class="grilla-colecciones">
+
+            <a href="#catalogo" class="categoria-card">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=85"
+                    alt="Colección de indumentaria femenina">
+                <span>PRENDAS SUPERIORES</span>
+            </a>
+
+            <a href="#catalogo" class="categoria-card">
+                <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85"
+                    alt="Colección de pantalones y jeans">
+                <span>JEANS & PANTALONES</span>
+            </a>
+
+            <a href="#catalogo" class="categoria-card">
+                <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=85"
+                    alt="Colección de moda femenina">
+                <span>LOOKS ESPECIALES</span>
+            </a>
+
+        </div>
+
+    </section>
+
+    <section class="catalogo" id="catalogo">
+
+        <div class="encabezado-seccion encabezado-catalogo">
+
+            <div>
+                <p class="etiqueta">NERAK COLLECTION</p>
+                <h2>Nuestras <em>prendas</em></h2>
+                <p class="descripcion-seccion">
+                    Encontrá esas prendas que se convierten en tus favoritas.
+                </p>
+            </div>
+
+            <input type="search" id="buscador-productos" placeholder="Buscar una prenda..."
+                aria-label="Buscar productos">
+
+        </div>
+
+        <div id="contenedor-productos" class="grilla-productos"></div>
+
+    </section>
+
+    <section class="mensaje-marca">
+
+        <p class="etiqueta">NERAK · INDUMENTARIA FEMENINA</p>
+
+        <h2>La diferencia está<br>en <em>cómo lo llevás.</em></h2>
+
+        <a href="#catalogo" class="boton-hero boton-oscuro">
+            EXPLORAR PRENDAS
+        </a>
+
+    </section>
+
+    <section class="administracion">
+
+        <div class="encabezado-seccion">
+            <div>
+                <p class="etiqueta">GESTIÓN DE TIENDA</p>
+                <h2>Administrar <em>catálogo</em></h2>
+                <p class="descripcion-seccion">
+                    Incorporá nuevas prendas a la colección NERAK.
+                </p>
+            </div>
+        </div>
+
+        <form id="formulario-producto" class="formulario">
+
+            <div class="campo">
+                <label for="nombre-producto">Nombre de la prenda</label>
+                <input type="text" id="nombre-producto" placeholder="Ej. Top de lino" required>
+            </div>
+
+            <div class="campo">
+                <label for="categoria-producto">Categoría</label>
+                <input type="text" id="categoria-producto" placeholder="Ej. Tops" required>
+            </div>
+
+            <div class="campo">
+                <label for="precio-producto">Precio</label>
+                <input type="number" id="precio-producto" placeholder="Ej. 35000" min="1" required>
+            </div>
+
+            <div class="campo">
+                <label for="stock-producto">Stock</label>
+                <input type="number" id="stock-producto" placeholder="Ej. 10" min="0" step="1" required>
+            </div>
+
+            <button type="submit" class="boton-principal">
+                + AGREGAR PRENDA
+            </button>
+
+        </form>
+
+        <div id="mensaje-feedback" class="feedback" aria-live="polite"></div>
+
+    </section>
+
+    <section class="resumen">
+
+        <div class="dato-resumen">
+            <span>Prendas en catálogo</span>
+            <strong id="total-productos">0</strong>
+        </div>
+
+        <div class="dato-resumen">
+            <span>Unidades disponibles</span>
+            <strong id="unidades-stock">0</strong>
+        </div>
+
+        <div class="dato-resumen">
+            <span>Valor del stock</span>
+            <strong id="valor-stock">$0</strong>
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="pie-pagina">
+
+    <a href="#inicio" class="logo logo-footer">
+        NERAK
+        <span>INDUMENTARIA FEMENINA</span>
+    </a>
+
+    <p>El estilo es una forma de expresión.</p>
+
+    <div class="footer-linea"></div>
+
+    <small>© 2026 NERAK. TODOS LOS DERECHOS RESERVADOS.</small>
+
+</footer>
+```
 
 </body>
+
 </html>

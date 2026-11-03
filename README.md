@@ -1,39 +1,64 @@
 # NERAK - Tienda de Indumentaria
 
-Proyecto de JavaScript realizado para Coderhouse. NERAK es un simulador de una tienda de indumentaria femenina que continúa desarrollándose como proyecto.
+NERAK es un proyecto de una tienda de indumentaria femenina que estoy desarrollando como parte del curso de JavaScript de Coderhouse.
 
-## Pre-Entrega 4
+A lo largo de las distintas pre-entregas fui incorporando los contenidos aprendidos para mejorar el funcionamiento de la tienda y darle forma a una interfaz interactiva.
 
-En esta entrega se incorporan arrays y métodos para trabajar con el catálogo de productos y relacionarlos con el flujo de compra.
+## Pre-Entrega 4 - Arrays
 
-### Funcionalidades
+En esta entrega trabajé con arrays y sus métodos para administrar el catálogo de prendas.
 
-* Catálogo de productos almacenado en un array.
-* Uso de `push()` para agregar prendas al final.
-* Uso de `unshift()` para agregar prendas al principio.
-* Uso de `pop()` para eliminar la última prenda.
-* Uso de `splice()` para reemplazar prendas.
-* Uso de `includes()` para validar productos.
-* Uso de `indexOf()` para encontrar la posición de una prenda.
-* Uso de `for...of` para recorrer el catálogo.
-* Validación de las opciones ingresadas por el usuario.
-* Simulación de una compra mediante `prompt`, `alert` y `console.log`.
-* Cálculo del total de la compra y aplicación de descuento.
+* Agregar y eliminar productos.
+* Buscar y reemplazar prendas.
+* Recorrer el catálogo con `for...of`.
+* Validar las opciones ingresadas.
+* Simular compras y calcular descuentos.
 
-### Productos
+## Pre-Entrega 5 - Objetos
 
-* Remera
-* Blusa
-* Camisa
-* Jean
-* Pantalón
-* Vestido
-* Pollera
-* Sweater
-* Campera
+En esta etapa incorporé objetos y clases para representar los productos de NERAK.
 
-### Tecnologías
+* Creación de productos con sus propiedades.
+* Uso de clases, constructores y métodos.
+* Administración de precios y stock.
+* Simulación de ventas.
+
+## Pre-Entrega 6 - Funciones de Orden Superior
+
+Incorporé métodos para buscar, filtrar y trabajar con la información del catálogo.
+
+* Búsqueda de productos.
+* Filtrado por características.
+* Comprobación de condiciones.
+* Cálculos y operaciones sobre los productos.
+
+## Pre-Entrega 7 - DOM y Eventos
+
+En esta entrega incorporé el DOM y los eventos para que la tienda pueda interactuar directamente con el usuario desde la página.
+
+* Visualización dinámica del catálogo.
+* Incorporación de nuevas prendas mediante un formulario.
+* Eliminación de productos.
+* Búsqueda de prendas desde el buscador.
+* Actualización del stock al realizar una compra.
+* Mensajes en pantalla para informar las acciones realizadas.
+* Actualización de la información del catálogo sin recargar la página.
+
+## Productos
+
+* Remeras
+* Blusas
+* Camisas
+* Jeans
+* Pantalones
+* Vestidos
+* Polleras
+* Sweaters
+* Camperas
+
+## Tecnologías utilizadas
 
 * HTML
+* CSS
 * JavaScript
 * Git y GitHub
