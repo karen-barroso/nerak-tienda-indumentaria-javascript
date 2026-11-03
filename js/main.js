@@ -1,20 +1,14 @@
-const nombre = prompt("Bienvenida a NERAK. ¿Cuál es tu nombre?");
+const solicitarNombre = function(mensaje) {
+    return prompt(mensaje);
+};
 
-let cantidadPrendas = parseInt(prompt("¿Cuántas prendas querés comprar?"));
+const validarCantidad = (cantidad) => {
+    return cantidad >= 1 && cantidad <= 20 && !isNaN(cantidad);
+};
 
-while (cantidadPrendas <= 0 || cantidadPrendas > 20 || isNaN(cantidadPrendas)) {
-
-    alert("Por favor, ingresá una cantidad válida de prendas. Podés comprar entre 1 y 20 prendas.");
-
-    cantidadPrendas = parseInt(prompt("¿Cuántas prendas querés comprar?"));
-}
-
-let totalCompra = 0;
-
-for (let i = 1; i <= cantidadPrendas; i++) {
-
-    let tipoPrenda = prompt(
-        "Prenda número " + i +
+function solicitarPrenda(numero) {
+    return prompt(
+        "Prenda número " + numero +
         "\n¿Qué querés comprar?" +
         "\n1. Remera" +
         "\n2. Blusa" +
@@ -26,91 +20,122 @@ for (let i = 1; i <= cantidadPrendas; i++) {
         "\n8. Sweater" +
         "\n9. Campera"
     );
+}
 
-    while (
-        tipoPrenda !== "1" &&
-        tipoPrenda !== "2" &&
-        tipoPrenda !== "3" &&
-        tipoPrenda !== "4" &&
-        tipoPrenda !== "5" &&
-        tipoPrenda !== "6" &&
-        tipoPrenda !== "7" &&
-        tipoPrenda !== "8" &&
-        tipoPrenda !== "9"
-    ) {
-
-        alert("Opción no válida. Por favor, elegí una prenda del 1 al 9.");
-
-        tipoPrenda = prompt(
-            "Prenda número " + i +
-            "\n¿Qué querés comprar?" +
-            "\n1. Remera" +
-            "\n2. Blusa" +
-            "\n3. Camisa" +
-            "\n4. Jean" +
-            "\n5. Pantalón" +
-            "\n6. Vestido" +
-            "\n7. Pollera" +
-            "\n8. Sweater" +
-            "\n9. Campera"
-        );
-    }
-
+function validarPrenda(tipoPrenda) {
     switch (tipoPrenda) {
-
         case "1":
-            totalCompra = totalCompra + 25000;
-            console.log("Elegiste una remera. Precio: $25.000");
-            break;
-
         case "2":
-            totalCompra = totalCompra + 35000;
-            console.log("Elegiste una blusa. Precio: $35.000");
-            break;
-
         case "3":
-            totalCompra = totalCompra + 45000;
-            console.log("Elegiste una camisa. Precio: $45.000");
-            break;
-
         case "4":
-            totalCompra = totalCompra + 65000;
-            console.log("Elegiste un jean. Precio: $65.000");
-            break;
-
         case "5":
-            totalCompra = totalCompra + 55000;
-            console.log("Elegiste un pantalón. Precio: $55.000");
-            break;
-
         case "6":
-            totalCompra = totalCompra + 55000;
-            console.log("Elegiste un vestido. Precio: $55.000");
-            break;
-
         case "7":
-            totalCompra = totalCompra + 45000;
-            console.log("Elegiste una pollera. Precio: $45.000");
-            break;
-
         case "8":
-            totalCompra = totalCompra + 50000;
-            console.log("Elegiste un sweater. Precio: $50.000");
-            break;
-
         case "9":
-            totalCompra = totalCompra + 75000;
-            console.log("Elegiste una campera. Precio: $75.000");
+            return true;
+        default:
+            return false;
+    }
+}
+
+function obtenerPrecio(tipoPrenda) {
+    switch (tipoPrenda) {
+        case "1":
+            return 25000;
+        case "2":
+            return 35000;
+        case "3":
+            return 45000;
+        case "4":
+            return 65000;
+        case "5":
+            return 55000;
+        case "6":
+            return 55000;
+        case "7":
+            return 45000;
+        case "8":
+            return 50000;
+        case "9":
+            return 75000;
+        default:
+            return 0;
+    }
+}
+
+function calcularTotal(totalActual, precio) {
+    return totalActual + precio;
+}
+
+function mostrarEleccion(tipoPrenda, precio) {
+    switch (tipoPrenda) {
+        case "1":
+            console.log("Elegiste una remera. Precio: $" + precio);
+            break;
+        case "2":
+            console.log("Elegiste una blusa. Precio: $" + precio);
+            break;
+        case "3":
+            console.log("Elegiste una camisa. Precio: $" + precio);
+            break;
+        case "4":
+            console.log("Elegiste un jean. Precio: $" + precio);
+            break;
+        case "5":
+            console.log("Elegiste un pantalón. Precio: $" + precio);
+            break;
+        case "6":
+            console.log("Elegiste un vestido. Precio: $" + precio);
+            break;
+        case "7":
+            console.log("Elegiste una pollera. Precio: $" + precio);
+            break;
+        case "8":
+            console.log("Elegiste un sweater. Precio: $" + precio);
+            break;
+        case "9":
+            console.log("Elegiste una campera. Precio: $" + precio);
             break;
     }
 }
 
-const mensajeFinal =
-    "Gracias por comprar en NERAK, " +
-    nombre +
-    ". El total de tu compra es de $" +
-    totalCompra +
-    ".";
+function mostrarResumen(nombre, total) {
+    const mensajeFinal =
+        "Gracias por comprar en NERAK, " +
+        nombre +
+        ". El total de tu compra es de $" +
+        total +
+        ".";
 
-alert(mensajeFinal);
-console.log(mensajeFinal);
+    alert(mensajeFinal);
+    console.log(mensajeFinal);
+}
+
+const nombre = solicitarNombre("Bienvenida a NERAK. ¿Cuál es tu nombre?");
+
+let cantidadPrendas = parseInt(prompt("¿Cuántas prendas querés comprar?"));
+
+while (!validarCantidad(cantidadPrendas)) {
+    alert("Por favor, ingresá una cantidad válida de prendas. Podés comprar entre 1 y 20 prendas.");
+    cantidadPrendas = parseInt(prompt("¿Cuántas prendas querés comprar?"));
+}
+
+let totalCompra = 0;
+
+for (let i = 1; i <= cantidadPrendas; i++) {
+    let tipoPrenda = solicitarPrenda(i);
+
+    while (!validarPrenda(tipoPrenda)) {
+        alert("Opción no válida. Por favor, elegí una prenda del 1 al 9.");
+        tipoPrenda = solicitarPrenda(i);
+    }
+
+    const precio = obtenerPrecio(tipoPrenda);
+
+    totalCompra = calcularTotal(totalCompra, precio);
+
+    mostrarEleccion(tipoPrenda, precio);
+}
+
+mostrarResumen(nombre, totalCompra);
