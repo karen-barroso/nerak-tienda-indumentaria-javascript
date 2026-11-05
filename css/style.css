@@ -416,19 +416,13 @@ input {
 }
 
 .tarjeta-producto {
-    background: var(--blanco);
-    padding: 28px;
-    border: 1px solid #eee7df;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #FFFFFF;
+    padding: 28px 24px;
+    border: 1px solid rgba(57, 42, 38, 0.10);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
     animation: aparecer 0.5s ease;
 }
 
-.tarjeta-producto {
-    background: #FFFFFF;
-    border: 1px solid rgba(57, 42, 38, 0.10);
-    padding: 28px 24px;
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
-}
 
 .tarjeta-producto:hover {
     transform: translateY(-6px);
@@ -500,11 +494,6 @@ input {
 
 .boton-eliminar:hover {
     background: var(--marfil-oscuro);
-}
-
-.boton-accion:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
 }
 
 .boton-accion:disabled {
