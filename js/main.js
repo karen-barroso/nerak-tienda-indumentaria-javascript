@@ -17,7 +17,9 @@ class Producto {
     }
 }
 
-const productosObjetos = [
+const CLAVE_STORAGE = "nerak-productos";
+
+const productosIniciales = [
     new Producto(1, "Remera", "Remeras", 25000, 20),
     new Producto(2, "Blusa", "Blusas", 35000, 20),
     new Producto(3, "Camisa", "Camisas", 45000, 20),
@@ -28,6 +30,35 @@ const productosObjetos = [
     new Producto(8, "Sweater", "Sweaters", 50000, 20),
     new Producto(9, "Campera", "Camperas", 75000, 20)
 ];
+
+function cargarProductos() {
+    const productosGuardados = localStorage.getItem(CLAVE_STORAGE);
+
+    if (productosGuardados === null) {
+        return productosIniciales;
+    }
+
+    try {
+        const productosParseados = JSON.parse(productosGuardados) ?? [];
+
+        if (!Array.isArray(productosParseados)) {
+            return productosIniciales;
+        }
+
+        return productosParseados.map(({ id, nombre, categoria, precio, stock }) =>
+            new Producto(id, nombre, categoria, precio, stock)
+        );
+    } catch {
+        return productosIniciales;
+    }
+}
+
+let productosObjetos = cargarProductos();
+
+let siguienteId = productosObjetos.reduce(
+    (idMayor, { id }) => Math.max(idMayor, Number(id) || 0),
+    0
+) + 1;
 
 const formulario = document.querySelector("#formulario-producto");
 const inputNombre = document.querySelector("#nombre-producto");
@@ -41,18 +72,20 @@ const totalProductos = document.querySelector("#total-productos");
 const unidadesStock = document.querySelector("#unidades-stock");
 const valorStock = document.querySelector("#valor-stock");
 
-let siguienteId = 10;
+const formatearPrecio = (precio) => "$" + precio.toLocaleString("es-AR");
 
-const formatearPrecio = (precio) => {
-    return "$" + precio.toLocaleString("es-AR");
-};
+function guardarProductos() {
+    localStorage.setItem(CLAVE_STORAGE, JSON.stringify(productosObjetos));
+}
 
-const buscarProductos = function (termino) {
-    return productosObjetos.filter(producto =>
-        producto.nombre.toLowerCase().includes(termino.toLowerCase()) ||
-        producto.categoria.toLowerCase().includes(termino.toLowerCase())
+function buscarProductos(termino) {
+    const busqueda = termino.toLowerCase();
+
+    return productosObjetos.filter(({ nombre, categoria }) =>
+        nombre.toLowerCase().includes(busqueda) ||
+        categoria.toLowerCase().includes(busqueda)
     );
-};
+}
 
 function mostrarMensaje(texto, tipo) {
     mensajeFeedback.textContent = texto;
@@ -61,12 +94,12 @@ function mostrarMensaje(texto, tipo) {
 
 function actualizarResumen() {
     const cantidadUnidades = productosObjetos.reduce(
-        (total, producto) => total + producto.stock,
+        (total, { stock }) => total + stock,
         0
     );
 
     const valorTotal = productosObjetos.reduce(
-        (total, producto) => total + producto.precio * producto.stock,
+        (total, { precio, stock }) => total + precio * stock,
         0
     );
 
@@ -76,61 +109,45 @@ function actualizarResumen() {
 }
 
 function renderizarProductos(lista) {
-    contenedorProductos.innerHTML = "";
-
     if (lista.length === 0) {
         contenedorProductos.innerHTML = `
             <p class="mensaje-vacio">
                 No encontramos prendas que coincidan con tu búsqueda.
             </p>
         `;
-
         actualizarResumen();
         return;
     }
 
-    let contenido = "";
-
-    for (const producto of lista) {
-        contenido += `
+    contenedorProductos.innerHTML = lista.map(
+        ({ id, nombre, categoria, precio, stock }) => `
             <article class="tarjeta-producto">
-                <p class="categoria-producto">${producto.categoria}</p>
-
-                <h3>${producto.nombre}</h3>
-
-                <p class="precio-producto">
-                    ${formatearPrecio(producto.precio)}
-                </p>
-
-                <p class="stock-producto">
-                    Stock disponible: ${producto.stock}
-                </p>
+                <p class="categoria-producto">${categoria}</p>
+                <h3>${nombre}</h3>
+                <p class="precio-producto">${formatearPrecio(precio)}</p>
+                <p class="stock-producto">Stock disponible: ${stock}</p>
 
                 <div class="botones-producto">
-
                     <button
                         class="boton-accion boton-comprar"
                         data-accion="comprar"
-                        data-id="${producto.id}"
-                        ${producto.stock === 0 ? "disabled" : ""}
+                        data-id="${id}"
+                        ${stock === 0 ? "disabled" : ""}
                     >
                         Comprar
                     </button>
 
                     <button
                         class="boton-accion boton-eliminar"
+                        data-id="${id}"
                         data-accion="eliminar"
-                        data-id="${producto.id}"
                     >
                         Eliminar
                     </button>
-
                 </div>
             </article>
-        `;
-    }
-
-    contenedorProductos.innerHTML = contenido;
+        `
+    ).join("");
 
     actualizarResumen();
 }
@@ -148,19 +165,22 @@ function agregarProducto(evento) {
         return;
     }
 
-    if (productosObjetos.some(producto =>
-        producto.nombre.toLowerCase() === nombre.toLowerCase()
-    )) {
+    const productoExiste = productosObjetos.some(
+        ({ nombre: nombreExistente }) =>
+            nombreExistente.toLowerCase() === nombre.toLowerCase()
+    );
+
+    if (productoExiste) {
         mostrarMensaje("Ya existe una prenda con ese nombre.", "error");
         return;
     }
 
-    if (isNaN(precio) || precio <= 0) {
+    if (Number.isNaN(precio) || precio <= 0) {
         mostrarMensaje("Ingresá un precio válido mayor que cero.", "error");
         return;
     }
 
-    if (isNaN(stock) || stock < 0 || stock % 1 !== 0) {
+    if (Number.isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
         mostrarMensaje("Ingresá una cantidad de stock válida.", "error");
         return;
     }
@@ -176,42 +196,46 @@ function agregarProducto(evento) {
     productosObjetos.push(nuevoProducto);
     siguienteId++;
 
+    guardarProductos();
     formulario.reset();
 
     renderizarProductos(buscarProductos(buscador.value));
-
     mostrarMensaje("La prenda se agregó correctamente al catálogo.", "exito");
 }
 
 function eliminarProducto(id) {
     const indiceProducto = productosObjetos.findIndex(
-        producto => producto.id === id
+        (producto) => producto.id === id
     );
 
     if (indiceProducto === -1) {
         return;
     }
 
-    const productoEliminado = productosObjetos.splice(indiceProducto, 1);
+    const [productoEliminado] = productosObjetos.splice(indiceProducto, 1);
 
+    guardarProductos();
     renderizarProductos(buscarProductos(buscador.value));
 
     mostrarMensaje(
-        "Se eliminó " + productoEliminado[0].nombre + " del catálogo.",
+        "Se eliminó " + productoEliminado.nombre + " del catálogo.",
         "exito"
     );
 }
 
 function comprarProducto(id) {
     const producto = productosObjetos.find(
-        producto => producto.id === id
+        (productoActual) => productoActual.id === id
     );
 
     if (!producto) {
         return;
     }
 
-    if (producto.vender(1)) {
+    const compraRealizada = producto.vender?.(1) ?? false;
+
+    if (compraRealizada) {
+        guardarProductos();
         renderizarProductos(buscarProductos(buscador.value));
 
         mostrarMensaje(
@@ -224,38 +248,33 @@ function comprarProducto(id) {
 }
 
 function manejarAcciones(evento) {
-    const boton = evento.target;
+    const boton = evento.target.closest(".boton-accion");
 
-    if (!boton.classList.contains("boton-accion")) {
+    if (!boton) {
         return;
     }
 
     const id = Number(boton.dataset.id);
     const accion = boton.dataset.accion;
 
-    if (accion === "comprar") {
-        comprarProducto(id);
-    }
-
-    if (accion === "eliminar") {
-        eliminarProducto(id);
-    }
+    accion === "comprar"
+        ? comprarProducto(id)
+        : accion === "eliminar"
+            ? eliminarProducto(id)
+            : undefined;
 }
 
 function filtrarProductos() {
     const termino = buscador.value.trim();
-
-    const productosFiltrados = buscarProductos(termino);
-
-    renderizarProductos(productosFiltrados);
+    renderizarProductos(buscarProductos(termino));
 }
 
 formulario.addEventListener("submit", agregarProducto);
-
 contenedorProductos.addEventListener("click", manejarAcciones);
-
 buscador.addEventListener("keyup", filtrarProductos);
 
+// Guarda el catálogo inicial la primera vez que se abre la página.
+guardarProductos();
 renderizarProductos(productosObjetos);
 
 const slides = document.querySelectorAll(".slide");
