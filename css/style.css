@@ -823,3 +823,10 @@ input {
         transition-duration: 0.01ms !important;
     }
 }
+
+#restablecer-catalogo {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    margin-top: 18px;
+}

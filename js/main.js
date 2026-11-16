@@ -31,25 +31,32 @@ const productosIniciales = [
     new Producto(9, "Campera", "Camperas", 75000, 20)
 ];
 
+function crearCatalogoInicial() {
+    return productosIniciales.map(
+        ({ id, nombre, categoria, precio, stock }) =>
+            new Producto(id, nombre, categoria, precio, stock)
+    );
+}
+
 function cargarProductos() {
     const productosGuardados = localStorage.getItem(CLAVE_STORAGE);
 
     if (productosGuardados === null) {
-        return productosIniciales;
+        return crearCatalogoInicial();
     }
 
     try {
         const productosParseados = JSON.parse(productosGuardados) ?? [];
 
         if (!Array.isArray(productosParseados)) {
-            return productosIniciales;
+            return crearCatalogoInicial();
         }
 
         return productosParseados.map(({ id, nombre, categoria, precio, stock }) =>
             new Producto(id, nombre, categoria, precio, stock)
         );
     } catch {
-        return productosIniciales;
+        return crearCatalogoInicial();
     }
 }
 
@@ -71,6 +78,7 @@ const mensajeFeedback = document.querySelector("#mensaje-feedback");
 const totalProductos = document.querySelector("#total-productos");
 const unidadesStock = document.querySelector("#unidades-stock");
 const valorStock = document.querySelector("#valor-stock");
+const botonRestablecer = document.querySelector("#restablecer-catalogo");
 
 const formatearPrecio = (precio) => "$" + precio.toLocaleString("es-AR");
 
@@ -152,6 +160,37 @@ function renderizarProductos(lista) {
     actualizarResumen();
 }
 
+function obtenerProductos() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (Array.isArray(productosObjetos)) {
+                resolve(productosObjetos);
+            } else {
+                reject(new Error("No se pudieron cargar los productos."));
+            }
+        }, 1500);
+    });
+}
+
+async function iniciarCatalogo() {
+    contenedorProductos.innerHTML = `
+        <p class="mensaje-vacio">Cargando productos de NERAK...</p>
+    `;
+
+    try {
+        const productosCargados = await obtenerProductos();
+        renderizarProductos(productosCargados);
+    } catch (error) {
+        contenedorProductos.innerHTML = `
+            <p class="mensaje-vacio">No pudimos cargar el catálogo. Intentá nuevamente.</p>
+        `;
+
+        mostrarMensaje(error.message, "error");
+    } finally {
+        console.log("Finalizó el proceso de carga del catálogo NERAK.");
+    }
+}
+
 function agregarProducto(evento) {
     evento.preventDefault();
 
@@ -223,6 +262,27 @@ function eliminarProducto(id) {
     );
 }
 
+function restablecerCatalogo() {
+    localStorage.removeItem(CLAVE_STORAGE);
+
+    productosObjetos = crearCatalogoInicial();
+
+    siguienteId = productosObjetos.reduce(
+        (idMayor, { id }) => Math.max(idMayor, Number(id) || 0),
+        0
+    ) + 1;
+
+    buscador.value = "";
+
+    guardarProductos();
+    renderizarProductos(productosObjetos);
+
+    mostrarMensaje(
+        "El catálogo se restableció correctamente con las prendas iniciales.",
+        "exito"
+    );
+}
+
 function comprarProducto(id) {
     const producto = productosObjetos.find(
         (productoActual) => productoActual.id === id
@@ -272,10 +332,17 @@ function filtrarProductos() {
 formulario.addEventListener("submit", agregarProducto);
 contenedorProductos.addEventListener("click", manejarAcciones);
 buscador.addEventListener("keyup", filtrarProductos);
+botonRestablecer.addEventListener("click", restablecerCatalogo);
 
-// Guarda el catálogo inicial la primera vez que se abre la página.
 guardarProductos();
-renderizarProductos(productosObjetos);
+iniciarCatalogo();
+
+setTimeout(() => {
+    mostrarMensaje(
+        "¡Bienvenida a NERAK! Descubrí nuestra colección y encontrá tu estilo.",
+        "exito"
+    );
+}, 4000);
 
 const slides = document.querySelectorAll(".slide");
 const indicadores = document.querySelectorAll(".indicador");
