@@ -18,54 +18,11 @@ class Producto {
 }
 
 const CLAVE_STORAGE = "nerak-productos";
+const URL_PRODUCTOS = "./data.json";
 
-const productosIniciales = [
-    new Producto(1, "Remera", "Remeras", 25000, 20),
-    new Producto(2, "Blusa", "Blusas", 35000, 20),
-    new Producto(3, "Camisa", "Camisas", 45000, 20),
-    new Producto(4, "Jean", "Jeans", 65000, 20),
-    new Producto(5, "Pantalón", "Pantalones", 55000, 20),
-    new Producto(6, "Vestido", "Vestidos", 55000, 20),
-    new Producto(7, "Pollera", "Polleras", 45000, 20),
-    new Producto(8, "Sweater", "Sweaters", 50000, 20),
-    new Producto(9, "Campera", "Camperas", 75000, 20)
-];
-
-function crearCatalogoInicial() {
-    return productosIniciales.map(
-        ({ id, nombre, categoria, precio, stock }) =>
-            new Producto(id, nombre, categoria, precio, stock)
-    );
-}
-
-function cargarProductos() {
-    const productosGuardados = localStorage.getItem(CLAVE_STORAGE);
-
-    if (productosGuardados === null) {
-        return crearCatalogoInicial();
-    }
-
-    try {
-        const productosParseados = JSON.parse(productosGuardados) ?? [];
-
-        if (!Array.isArray(productosParseados)) {
-            return crearCatalogoInicial();
-        }
-
-        return productosParseados.map(({ id, nombre, categoria, precio, stock }) =>
-            new Producto(id, nombre, categoria, precio, stock)
-        );
-    } catch {
-        return crearCatalogoInicial();
-    }
-}
-
-let productosObjetos = cargarProductos();
-
-let siguienteId = productosObjetos.reduce(
-    (idMayor, { id }) => Math.max(idMayor, Number(id) || 0),
-    0
-) + 1;
+let productosIniciales = [];
+let productosObjetos = [];
+let siguienteId = 1;
 
 const formulario = document.querySelector("#formulario-producto");
 const inputNombre = document.querySelector("#nombre-producto");
@@ -82,8 +39,93 @@ const botonRestablecer = document.querySelector("#restablecer-catalogo");
 
 const formatearPrecio = (precio) => "$" + precio.toLocaleString("es-AR");
 
+function mostrarNotificacion(texto, tipo = "exito") {
+    if (typeof Toastify === "undefined") {
+        mostrarMensaje(texto, tipo);
+        return;
+    }
+
+    Toastify({
+        text: texto,
+        duration: 3500,
+        close: true,
+        gravity: "top",
+        position: "right",
+        stopOnFocus: true,
+        style: {
+            background: tipo === "error"
+                ? "linear-gradient(to right, #9C4D4D, #765766)"
+                : "linear-gradient(to right, #536B55, #765766)",
+            borderRadius: "4px",
+            fontFamily: "Manrope, sans-serif",
+            fontSize: "13px"
+        }
+    }).showToast();
+}
+
+function cargarLibreriaToastify() {
+    return new Promise((resolve, reject) => {
+        const estilos = document.createElement("link");
+
+        estilos.rel = "stylesheet";
+        estilos.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+
+        document.head.appendChild(estilos);
+
+        const script = document.createElement("script");
+
+        script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+        script.onload = resolve;
+        script.onerror = () => reject(
+            new Error("No se pudo cargar la librería de notificaciones.")
+        );
+
+        document.head.appendChild(script);
+    });
+}
+
+function crearCatalogoInicial() {
+    return productosIniciales.map(
+        ({ id, nombre, categoria, precio, stock }) =>
+            new Producto(id, nombre, categoria, precio, stock)
+    );
+}
+
+function cargarProductosGuardados() {
+    const productosGuardados = localStorage.getItem(CLAVE_STORAGE);
+
+    if (productosGuardados === null) {
+        return null;
+    }
+
+    try {
+        const productosParseados = JSON.parse(productosGuardados);
+
+        if (!Array.isArray(productosParseados)) {
+            return null;
+        }
+
+        return productosParseados.map(
+            ({ id, nombre, categoria, precio, stock }) =>
+                new Producto(id, nombre, categoria, precio, stock)
+        );
+    } catch {
+        return null;
+    }
+}
+
 function guardarProductos() {
-    localStorage.setItem(CLAVE_STORAGE, JSON.stringify(productosObjetos));
+    localStorage.setItem(
+        CLAVE_STORAGE,
+        JSON.stringify(productosObjetos)
+    );
+}
+
+function actualizarSiguienteId() {
+    siguienteId = productosObjetos.reduce(
+        (idMayor, { id }) => Math.max(idMayor, Number(id) || 0),
+        0
+    ) + 1;
 }
 
 function buscarProductos(termino) {
@@ -123,6 +165,7 @@ function renderizarProductos(lista) {
                 No encontramos prendas que coincidan con tu búsqueda.
             </p>
         `;
+
         actualizarResumen();
         return;
     }
@@ -162,30 +205,78 @@ function renderizarProductos(lista) {
 
 function obtenerProductos() {
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (Array.isArray(productosObjetos)) {
-                resolve(productosObjetos);
-            } else {
-                reject(new Error("No se pudieron cargar los productos."));
-            }
-        }, 1500);
+        fetch(URL_PRODUCTOS)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(
+                        "Error al solicitar los productos: " + response.status
+                    );
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                setTimeout(() => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        resolve(data);
+                    } else {
+                        reject(
+                            new Error("El archivo de productos no contiene datos válidos.")
+                        );
+                    }
+                }, 1500);
+            })
+            .catch(error => reject(error));
     });
 }
 
 async function iniciarCatalogo() {
     contenedorProductos.innerHTML = `
-        <p class="mensaje-vacio">Cargando productos de NERAK...</p>
+        <p class="mensaje-vacio">
+            Cargando productos de NERAK...
+        </p>
     `;
 
     try {
         const productosCargados = await obtenerProductos();
-        renderizarProductos(productosCargados);
+
+        productosIniciales = productosCargados.map(
+            ({ id, nombre, categoria, precio, stock }) =>
+                new Producto(id, nombre, categoria, precio, stock)
+        );
+
+        const productosGuardados = cargarProductosGuardados();
+
+        productosObjetos = productosGuardados !== null
+            ? productosGuardados
+            : crearCatalogoInicial();
+
+        actualizarSiguienteId();
+        guardarProductos();
+        renderizarProductos(buscarProductos(buscador.value));
+
+        mostrarNotificacion(
+            "El catálogo de NERAK se cargó correctamente.",
+            "exito"
+        );
+
     } catch (error) {
         contenedorProductos.innerHTML = `
-            <p class="mensaje-vacio">No pudimos cargar el catálogo. Intentá nuevamente.</p>
+            <p class="mensaje-vacio">
+                No pudimos cargar el catálogo. Intentá nuevamente.
+            </p>
         `;
 
-        mostrarMensaje(error.message, "error");
+        mostrarMensaje(
+            "Ocurrió un error al cargar los productos: " + error.message,
+            "error"
+        );
+
+        mostrarNotificacion(
+            "No se pudo cargar el catálogo de NERAK.",
+            "error"
+        );
+
     } finally {
         console.log("Finalizó el proceso de carga del catálogo NERAK.");
     }
@@ -201,6 +292,7 @@ function agregarProducto(evento) {
 
     if (nombre === "" || categoria === "") {
         mostrarMensaje("Completá todos los campos.", "error");
+        mostrarNotificacion("Completá todos los campos.", "error");
         return;
     }
 
@@ -211,16 +303,19 @@ function agregarProducto(evento) {
 
     if (productoExiste) {
         mostrarMensaje("Ya existe una prenda con ese nombre.", "error");
+        mostrarNotificacion("Esa prenda ya existe en el catálogo.", "error");
         return;
     }
 
     if (Number.isNaN(precio) || precio <= 0) {
         mostrarMensaje("Ingresá un precio válido mayor que cero.", "error");
+        mostrarNotificacion("Ingresá un precio válido.", "error");
         return;
     }
 
     if (Number.isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
         mostrarMensaje("Ingresá una cantidad de stock válida.", "error");
+        mostrarNotificacion("Ingresá una cantidad de stock válida.", "error");
         return;
     }
 
@@ -239,19 +334,30 @@ function agregarProducto(evento) {
     formulario.reset();
 
     renderizarProductos(buscarProductos(buscador.value));
-    mostrarMensaje("La prenda se agregó correctamente al catálogo.", "exito");
+
+    mostrarMensaje(
+        "La prenda se agregó correctamente al catálogo.",
+        "exito"
+    );
+
+    mostrarNotificacion(
+        "La prenda se agregó correctamente al catálogo."
+    );
 }
 
 function eliminarProducto(id) {
     const indiceProducto = productosObjetos.findIndex(
-        (producto) => producto.id === id
+        producto => producto.id === id
     );
 
     if (indiceProducto === -1) {
         return;
     }
 
-    const [productoEliminado] = productosObjetos.splice(indiceProducto, 1);
+    const [productoEliminado] = productosObjetos.splice(
+        indiceProducto,
+        1
+    );
 
     guardarProductos();
     renderizarProductos(buscarProductos(buscador.value));
@@ -260,18 +366,16 @@ function eliminarProducto(id) {
         "Se eliminó " + productoEliminado.nombre + " del catálogo.",
         "exito"
     );
+
+    mostrarNotificacion(
+        productoEliminado.nombre + " se eliminó del catálogo."
+    );
 }
 
 function restablecerCatalogo() {
-    localStorage.removeItem(CLAVE_STORAGE);
-
     productosObjetos = crearCatalogoInicial();
 
-    siguienteId = productosObjetos.reduce(
-        (idMayor, { id }) => Math.max(idMayor, Number(id) || 0),
-        0
-    ) + 1;
-
+    actualizarSiguienteId();
     buscador.value = "";
 
     guardarProductos();
@@ -281,29 +385,48 @@ function restablecerCatalogo() {
         "El catálogo se restableció correctamente con las prendas iniciales.",
         "exito"
     );
+
+    mostrarNotificacion(
+        "El catálogo volvió a sus productos iniciales."
+    );
 }
 
 function comprarProducto(id) {
     const producto = productosObjetos.find(
-        (productoActual) => productoActual.id === id
+        productoActual => productoActual.id === id
     );
 
     if (!producto) {
         return;
     }
 
-    const compraRealizada = producto.vender?.(1) ?? false;
+    const compraRealizada = producto.vender(1);
 
     if (compraRealizada) {
         guardarProductos();
-        renderizarProductos(buscarProductos(buscador.value));
+
+        renderizarProductos(
+            buscarProductos(buscador.value)
+        );
 
         mostrarMensaje(
             "¡Compra realizada! Stock actualizado para " + producto.nombre + ".",
             "exito"
         );
+
+        mostrarNotificacion(
+            "¡Compra realizada! Stock actualizado para " + producto.nombre + "."
+        );
     } else {
-        mostrarMensaje("No hay stock disponible de esta prenda.", "error");
+        mostrarMensaje(
+            "No hay stock disponible de esta prenda.",
+            "error"
+        );
+
+        mostrarNotificacion(
+            "No hay stock disponible de esta prenda.",
+            "error"
+        );
     }
 }
 
@@ -317,15 +440,18 @@ function manejarAcciones(evento) {
     const id = Number(boton.dataset.id);
     const accion = boton.dataset.accion;
 
-    accion === "comprar"
-        ? comprarProducto(id)
-        : accion === "eliminar"
-            ? eliminarProducto(id)
-            : undefined;
+    if (accion === "comprar") {
+        comprarProducto(id);
+    }
+
+    if (accion === "eliminar") {
+        eliminarProducto(id);
+    }
 }
 
 function filtrarProductos() {
     const termino = buscador.value.trim();
+
     renderizarProductos(buscarProductos(termino));
 }
 
@@ -334,13 +460,9 @@ contenedorProductos.addEventListener("click", manejarAcciones);
 buscador.addEventListener("keyup", filtrarProductos);
 botonRestablecer.addEventListener("click", restablecerCatalogo);
 
-guardarProductos();
-iniciarCatalogo();
-
 setTimeout(() => {
-    mostrarMensaje(
-        "¡Bienvenida a NERAK! Descubrí nuestra colección y encontrá tu estilo.",
-        "exito"
+    mostrarNotificacion(
+        "¡Bienvenida a NERAK! Descubrí nuestra colección y encontrá tu estilo."
     );
 }, 4000);
 
@@ -405,3 +527,15 @@ if (slides.length > 0 && indicadores.length === slides.length) {
 
     iniciarCarrusel();
 }
+
+async function iniciarNERAK() {
+    try {
+        await cargarLibreriaToastify();
+    } catch (error) {
+        console.error(error.message);
+    }
+
+    await iniciarCatalogo();
+}
+
+iniciarNERAK();

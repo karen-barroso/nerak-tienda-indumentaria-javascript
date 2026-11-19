@@ -1,0 +1,65 @@
+[
+    {
+        "id": 1,
+        "nombre": "Remera",
+        "categoria": "Remeras",
+        "precio": 25000,
+        "stock": 20
+    },
+    {
+        "id": 2,
+        "nombre": "Blusa",
+        "categoria": "Blusas",
+        "precio": 35000,
+        "stock": 20
+    },
+    {
+        "id": 3,
+        "nombre": "Camisa",
+        "categoria": "Camisas",
+        "precio": 45000,
+        "stock": 20
+    },
+    {
+        "id": 4,
+        "nombre": "Jean",
+        "categoria": "Jeans",
+        "precio": 65000,
+        "stock": 20
+    },
+    {
+        "id": 5,
+        "nombre": "Pantalón",
+        "categoria": "Pantalones",
+        "precio": 55000,
+        "stock": 20
+    },
+    {
+        "id": 6,
+        "nombre": "Vestido",
+        "categoria": "Vestidos",
+        "precio": 55000,
+        "stock": 20
+    },
+    {
+        "id": 7,
+        "nombre": "Pollera",
+        "categoria": "Polleras",
+        "precio": 45000,
+        "stock": 20
+    },
+    {
+        "id": 8,
+        "nombre": "Sweater",
+        "categoria": "Sweaters",
+        "precio": 50000,
+        "stock": 20
+    },
+    {
+        "id": 9,
+        "nombre": "Campera",
+        "categoria": "Camperas",
+        "precio": 75000,
+        "stock": 20
+    }
+]
