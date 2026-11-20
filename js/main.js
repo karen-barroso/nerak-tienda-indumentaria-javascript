@@ -37,7 +37,8 @@ const unidadesStock = document.querySelector("#unidades-stock");
 const valorStock = document.querySelector("#valor-stock");
 const botonRestablecer = document.querySelector("#restablecer-catalogo");
 
-const formatearPrecio = (precio) => "$" + precio.toLocaleString("es-AR");
+const formatearPrecio = precio =>
+    "$" + precio.toLocaleString("es-AR");
 
 function mostrarNotificacion(texto, tipo = "exito") {
     if (typeof Toastify === "undefined") {
@@ -181,11 +182,11 @@ function renderizarProductos(lista) {
                 <div class="botones-producto">
                     <button
                         class="boton-accion boton-comprar"
-                        data-accion="comprar"
+                        data-accion="agregar-carrito"
                         data-id="${id}"
                         ${stock === 0 ? "disabled" : ""}
                     >
-                        Comprar
+                        AGREGAR AL CARRITO
                     </button>
 
                     <button
@@ -203,31 +204,24 @@ function renderizarProductos(lista) {
     actualizarResumen();
 }
 
-function obtenerProductos() {
-    return new Promise((resolve, reject) => {
-        fetch(URL_PRODUCTOS)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(
-                        "Error al solicitar los productos: " + response.status
-                    );
-                }
+async function obtenerProductos() {
+    const response = await fetch(URL_PRODUCTOS);
 
-                return response.json();
-            })
-            .then(data => {
-                setTimeout(() => {
-                    if (Array.isArray(data) && data.length > 0) {
-                        resolve(data);
-                    } else {
-                        reject(
-                            new Error("El archivo de productos no contiene datos válidos.")
-                        );
-                    }
-                }, 1500);
-            })
-            .catch(error => reject(error));
-    });
+    if (!response.ok) {
+        throw new Error(
+            "Error al solicitar los productos: " + response.status
+        );
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+        throw new Error(
+            "El archivo de productos no contiene datos válidos."
+        );
+    }
+
+    return data;
 }
 
 async function iniciarCatalogo() {
@@ -255,6 +249,10 @@ async function iniciarCatalogo() {
         guardarProductos();
         renderizarProductos(buscarProductos(buscador.value));
 
+        document.dispatchEvent(
+            new CustomEvent("catalogoActualizado")
+        );
+
         mostrarNotificacion(
             "El catálogo de NERAK se cargó correctamente.",
             "exito"
@@ -276,9 +274,6 @@ async function iniciarCatalogo() {
             "No se pudo cargar el catálogo de NERAK.",
             "error"
         );
-
-    } finally {
-        console.log("Finalizó el proceso de carga del catálogo NERAK.");
     }
 }
 
@@ -335,6 +330,10 @@ function agregarProducto(evento) {
 
     renderizarProductos(buscarProductos(buscador.value));
 
+    document.dispatchEvent(
+        new CustomEvent("catalogoActualizado")
+    );
+
     mostrarMensaje(
         "La prenda se agregó correctamente al catálogo.",
         "exito"
@@ -362,6 +361,10 @@ function eliminarProducto(id) {
     guardarProductos();
     renderizarProductos(buscarProductos(buscador.value));
 
+    document.dispatchEvent(
+        new CustomEvent("catalogoActualizado")
+    );
+
     mostrarMensaje(
         "Se eliminó " + productoEliminado.nombre + " del catálogo.",
         "exito"
@@ -381,6 +384,10 @@ function restablecerCatalogo() {
     guardarProductos();
     renderizarProductos(productosObjetos);
 
+    document.dispatchEvent(
+        new CustomEvent("catalogoActualizado")
+    );
+
     mostrarMensaje(
         "El catálogo se restableció correctamente con las prendas iniciales.",
         "exito"
@@ -389,45 +396,6 @@ function restablecerCatalogo() {
     mostrarNotificacion(
         "El catálogo volvió a sus productos iniciales."
     );
-}
-
-function comprarProducto(id) {
-    const producto = productosObjetos.find(
-        productoActual => productoActual.id === id
-    );
-
-    if (!producto) {
-        return;
-    }
-
-    const compraRealizada = producto.vender(1);
-
-    if (compraRealizada) {
-        guardarProductos();
-
-        renderizarProductos(
-            buscarProductos(buscador.value)
-        );
-
-        mostrarMensaje(
-            "¡Compra realizada! Stock actualizado para " + producto.nombre + ".",
-            "exito"
-        );
-
-        mostrarNotificacion(
-            "¡Compra realizada! Stock actualizado para " + producto.nombre + "."
-        );
-    } else {
-        mostrarMensaje(
-            "No hay stock disponible de esta prenda.",
-            "error"
-        );
-
-        mostrarNotificacion(
-            "No hay stock disponible de esta prenda.",
-            "error"
-        );
-    }
 }
 
 function manejarAcciones(evento) {
@@ -440,8 +408,8 @@ function manejarAcciones(evento) {
     const id = Number(boton.dataset.id);
     const accion = boton.dataset.accion;
 
-    if (accion === "comprar") {
-        comprarProducto(id);
+    if (accion === "agregar-carrito") {
+        window.NERAK.agregarAlCarrito(id);
     }
 
     if (accion === "eliminar") {
@@ -528,11 +496,25 @@ if (slides.length > 0 && indicadores.length === slides.length) {
     iniciarCarrusel();
 }
 
+window.NERAK = {
+    obtenerProductos: () => productosObjetos,
+    guardarProductos,
+    renderizarProductosActuales: () =>
+        renderizarProductos(buscarProductos(buscador.value)),
+    actualizarResumen,
+    formatearPrecio,
+    mostrarMensaje,
+    mostrarNotificacion
+};
+
 async function iniciarNERAK() {
     try {
         await cargarLibreriaToastify();
-    } catch (error) {
-        console.error(error.message);
+    } catch {
+        mostrarMensaje(
+            "No se pudo cargar el servicio de notificaciones. La tienda seguirá funcionando.",
+            "error"
+        );
     }
 
     await iniciarCatalogo();
